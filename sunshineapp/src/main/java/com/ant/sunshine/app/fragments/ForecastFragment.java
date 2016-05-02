@@ -189,9 +189,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
                 onLocationChanged();
             }
         }
-        if (mForecastAdapter != null) {
-            mForecastAdapter.startGoogleApiClient();
-        }
     }
 
     private void initUseTodayLayoutIfAvailable(Bundle savedInstanceState) {
@@ -502,13 +499,5 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         void onItemSelected(Uri dateUri, ForecastAdapter.ForecastAdapterViewHolder vh);
 
         void onOpenMap();
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        if (mForecastAdapter != null) {
-            mForecastAdapter.stopGoogleApiClient();
-        }
     }
 }

@@ -31,12 +31,22 @@ import android.text.format.Time;
 import android.util.Log;
 
 import com.ant.core.Utility;
+import com.ant.core.WatchConfigurationPreferences;
+import com.ant.core.WatchfaceSyncCommons;
 import com.bumptech.glide.Glide;
 import com.ant.sunshine.app.BuildConfig;
 import com.ant.sunshine.app.activities.MainActivity;
 import com.ant.sunshine.app.R;
 import com.ant.sunshine.app.test.WeatherContract;
 import com.ant.sunshine.app.muzei.WeatherMuzeiSource;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallbacks;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.PutDataRequest;
+import com.google.android.gms.wearable.Wearable;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -51,7 +61,7 @@ import java.net.URL;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 
-public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
+public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     public static final String HTTP_API_OPENWEATHERMAP_ORG_DATA_2_5_FORECAST_DAILY = "http://api.openweathermap.org/data/2.5/forecast/daily?";
     public static final String QUERY_PARAM_DEFAULT = "q";
     public static final String MODE = "mode";
@@ -78,6 +88,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     public static final String JSON_KEY_ID = "id";
     public static final String JSON_KEY_COD = "cod";
     public static final String GET = "GET";
+    private GoogleApiClient googleApiClient;
+
 
     // Now we have a String representing the complete forecast in JSON Format.
     // Fortunately parsing is easy:  constructor takes the JSON string and converts it
@@ -122,7 +134,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     public static final int SYNC_FLEXTIME = SYNC_INTERVAL / 3;
     private static final long DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
     private static final int WEATHER_NOTIFICATION_ID = 3004;
-
+    private static final String TAG = SunshineSyncAdapter.class.getCanonicalName();
 
     private static final String[] NOTIFY_WEATHER_PROJECTION = new String[]{
             WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
@@ -133,7 +145,55 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
     public SunshineSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
+        initGoogleApiClient(context);
     }
+
+    private void initGoogleApiClient(Context context) {
+        Log.d(TAG, "initializing google client!");
+        googleApiClient = new GoogleApiClient.Builder(context)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(Wearable.API)
+                .build();
+        startGoogleApiClient(context);
+    }
+
+    private PutDataMapRequest updateDataMapRequest(double high, double low, int weatherId) {
+        PutDataMapRequest putDataMapReq = PutDataMapRequest.create(WatchConfigurationPreferences.PATH);
+        WatchConfigurationPreferences configurationPreferences = new WatchConfigurationPreferences.Builder()
+                .addLowTemperature(low)
+                .addHighTemperature(high)
+                .addWeatherInfoId(weatherId)
+                .build();
+
+        if (configurationPreferences != null) {
+            putDataMapReq.getDataMap().putDouble(WatchfaceSyncCommons.KEY_LOW_TEMP, configurationPreferences.getLowTemp());
+            putDataMapReq.getDataMap().putDouble(WatchfaceSyncCommons.KEY_HIGH_TEMP, configurationPreferences.getHighTemp());
+            putDataMapReq.getDataMap().putInt(WatchfaceSyncCommons.KEY_WEATHER_INFO, configurationPreferences.getWeatherId());
+        }
+        return putDataMapReq;
+    }
+
+
+    private void processWeatherData(double high, double low, int weatherId) {
+        PutDataMapRequest putDataMapReq = updateDataMapRequest(high, low, weatherId);
+        PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
+        if (googleApiClient == null) {
+            initGoogleApiClient(getContext());
+        }
+        Wearable.DataApi.putDataItem(googleApiClient, putDataReq).setResultCallback(new ResultCallbacks<DataApi.DataItemResult>() {
+            @Override
+            public void onSuccess(DataApi.DataItemResult dataItemResult) {
+                Log.d(TAG, "data sent: Success!");
+            }
+
+            @Override
+            public void onFailure(Status status) {
+                Log.d(TAG, "date sent: Failure!");
+            }
+        });
+    }
+
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
@@ -505,6 +565,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                     SharedPreferences.Editor editor = prefs.edit();
                     editor.putLong(lastNotificationKey, System.currentTimeMillis());
                     editor.commit();
+                    processWeatherData(high, low, weatherId);
                 }
                 cursor.close();
             }
@@ -667,4 +728,34 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
         spe.putInt(c.getString(R.string.pref_location_status_key), locationStatus);
         spe.commit();
     }
+
+    public void startGoogleApiClient(Context context) {
+        if (googleApiClient == null) {
+            initGoogleApiClient(context);
+        }
+        googleApiClient.connect();
+
+    }
+
+    public void stopGoogleApiClient() {
+        if (googleApiClient != null && googleApiClient.isConnected()) {
+            googleApiClient.disconnect();
+        }
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        Log.d(TAG, "onConnected");
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.e(TAG, "onConnectionSuspended");
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        Log.e(TAG, "onConnectionFailed");
+    }
+
 }

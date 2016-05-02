@@ -46,7 +46,7 @@ import com.google.android.gms.wearable.Wearable;
  * {@link ForecastAdapter} exposes a list of weather forecasts
  * from a {@link android.database.Cursor} to a {@link android.support.v7.widget.RecyclerView}.
  */
-public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ForecastAdapterViewHolder> implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ForecastAdapterViewHolder> {
 
     private static final String TAG = ForecastAdapter.class.getCanonicalName();
     private static final int VIEW_TYPE_TODAY = 0;
@@ -98,25 +98,12 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.Foreca
         void onClick(Long date, ForecastAdapterViewHolder vh);
     }
 
-    private GoogleApiClient googleApiClient;
-
     public ForecastAdapter(Context context, ForecastAdapterOnClickHandler dh, View emptyView, int choiceMode) {
         mContext = context;
         mClickHandler = dh;
         mEmptyView = emptyView;
         mICM = new ItemChoiceManager(this);
         mICM.setChoiceMode(choiceMode);
-        initGoogleApiClient(context);
-    }
-
-    private void initGoogleApiClient(Context context) {
-        Log.d(TAG, "initializing google client!");
-        googleApiClient = new GoogleApiClient.Builder(context)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(Wearable.API)
-                .build();
-        googleApiClient.connect();
     }
 
     /*
@@ -213,46 +200,7 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.Foreca
         forecastAdapterViewHolder.mLowTempView.setContentDescription(mContext.getString(R.string.a11y_low_temp, lowString));
 
         mICM.onBindViewHolder(forecastAdapterViewHolder, position);
-        if (useLongToday) {
-            processWeatherData(high, low, weatherId);
-        }
     }
-
-    private void processWeatherData(double high, double low, int weatherId) {
-        PutDataMapRequest putDataMapReq = updateDataMapRequest(high, low, weatherId);
-        PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
-        if (googleApiClient == null) {
-            initGoogleApiClient(mContext);
-        }
-        Wearable.DataApi.putDataItem(googleApiClient, putDataReq).setResultCallback(new ResultCallbacks<DataApi.DataItemResult>() {
-            @Override
-            public void onSuccess(DataApi.DataItemResult dataItemResult) {
-                Log.d(TAG, "data sent: Success!");
-            }
-
-            @Override
-            public void onFailure(Status status) {
-                Log.d(TAG, "date sent: Failure!");
-            }
-        });
-    }
-
-    private PutDataMapRequest updateDataMapRequest(double high, double low, int weatherId) {
-        PutDataMapRequest putDataMapReq = PutDataMapRequest.create(WatchConfigurationPreferences.PATH);
-        WatchConfigurationPreferences configurationPreferences = new WatchConfigurationPreferences.Builder()
-                .addLowTemperature(low)
-                .addHighTemperature(high)
-                .addWeatherInfoId(weatherId)
-                .build();
-
-        if (configurationPreferences != null) {
-            putDataMapReq.getDataMap().putDouble(WatchfaceSyncCommons.KEY_LOW_TEMP, configurationPreferences.getLowTemp());
-            putDataMapReq.getDataMap().putDouble(WatchfaceSyncCommons.KEY_HIGH_TEMP, configurationPreferences.getHighTemp());
-            putDataMapReq.getDataMap().putInt(WatchfaceSyncCommons.KEY_WEATHER_INFO, configurationPreferences.getWeatherId());
-        }
-        return putDataMapReq;
-    }
-
 
     private String getLocationFromPrefs(Context context) {
         return Utility.getPreferredLocation(context);
@@ -301,34 +249,4 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.Foreca
             vfh.onClick(vfh.itemView);
         }
     }
-
-    @Override
-    public void onConnected(Bundle bundle) {
-        Log.d(TAG, "onConnected");
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        Log.e(TAG, "onConnectionSuspended");
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        Log.e(TAG, "onConnectionFailed");
-    }
-
-    public void startGoogleApiClient() {
-        if (googleApiClient == null) {
-            initGoogleApiClient(mContext);
-        }
-        googleApiClient.connect();
-
-    }
-
-    public void stopGoogleApiClient() {
-        if (googleApiClient != null && googleApiClient.isConnected()) {
-            googleApiClient.disconnect();
-        }
-    }
-
 }
