@@ -1,0 +1,1 @@
+include ':sunshineapp', ':wearable', ':core'

@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "144343321476",
+    "project_id": "inbound-object-129909"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:144343321476:android:f965140940208158",
+        "android_client_info": {
+          "package_name": "com.ant.sunshine.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "144343321476-dg2m9j4i3mcggrchgsa9svedjp1f0jrr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ant.sunshine.app",
+            "certificate_hash": "BD8F166C002211322FE83371F571F1AFE49C82B8"
+          }
+        },
+        {
+          "client_id": "144343321476-2qei2gk4peg1mnpttn6iegv71u5jrj1k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAy76ZtWaUAfZZzBisVkTk3ayQ-9bSB9pQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

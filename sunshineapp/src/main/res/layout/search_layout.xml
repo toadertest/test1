@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white">
+
+    <com.example.android.sunshine.app.geo.DelayAutoCompleteTextView
+        android:id="@+id/geo_autocomplete"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:imeOptions="flagNoExtractUi|actionSearch"
+        android:inputType="textCapSentences"
+        android:textColor="@color/white"
+        android:background="@color/white"
+        android:hint="hint"
+        android:layout_gravity="center_vertical"
+        android:layout_marginEnd="35dp"
+        android:layout_marginRight="35dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        android:padding="10dp"
+        android:dropDownWidth="fill_parent"
+        />
+
+    <ImageView
+        android:id="@+id/geo_autocomplete_clear"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@android:drawable/ic_delete"
+        android:contentDescription="remove"
+        android:layout_gravity="center_vertical|end"
+        android:visibility="gone"
+        android:layout_marginEnd="12dp"
+        android:layout_marginRight="12dp"
+        />
+</FrameLayout>
