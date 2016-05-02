@@ -123,10 +123,15 @@ public class LocationTrackingManager {
             return false;
         }
         String provider = LocationManager.GPS_PROVIDER;
-        if (locationManager.getProvider(provider) == null) {
+        try {
+
+            if (locationManager.getProvider(provider) == null) {
+                return false;
+            }
+            return locationManager.isProviderEnabled(provider);
+        } catch (SecurityException secex) {
             return false;
         }
-        return locationManager.isProviderEnabled(provider);
     }
 
     public boolean isAllowed() {

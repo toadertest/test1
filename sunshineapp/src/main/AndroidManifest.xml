@@ -33,15 +33,15 @@
     <!-- Permissions required for Google Cloud Messaging -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
-    <uses-permission android:name="com.example.android.sunshine.app.MAPS_RECEIVE" />
+    <uses-permission android:name="com.ant.sunshine.app.permission.MAPS_RECEIVE" />
 
     <uses-permission android:name="com.google.android.permission.PROVIDE_BACKGROUND" />
 
     <permission
-        android:name="com.example.android.sunshine.app.permission.C2D_MESSAGE"
+        android:name="com.ant.sunshine.app.permission.C2D_MESSAGE"
         android:protectionLevel="signature" />
 
-    <uses-permission android:name="com.example.android.sunshine.app.permission.C2D_MESSAGE" />
+    <uses-permission android:name="com.ant.sunshine.app.permission.C2D_MESSAGE" />
 
     <application
         android:name=".application.SunshineApplication"

@@ -130,7 +130,7 @@ public class CustomWatchFace {
         float lowTimeYOffset = computeYOffset(lowTempText, lowTempPaint, 0f);
         canvas.drawText(lowTempText, lowTimeXOffset, defaultYOffset + lowTimeYOffset + timeYOffset + dateYOffset, lowTempPaint);
         //draw the high temperature
-        String formatHighTemp = Utility.formatTemperature(context, lowValue);
+        String formatHighTemp = Utility.formatTemperature(context, highValue);
         String highTempText = String.format(HIGH_FORMAT_TEXT, HIGH_TEXT, formatHighTemp);
         float highTempTextLength = lowTempPaint.measureText(highTempText);
         float highTimeXOffset = computeXOffset(highTempText, highTempPaint, bounds, (highTempTextLength / (2.0f)));
