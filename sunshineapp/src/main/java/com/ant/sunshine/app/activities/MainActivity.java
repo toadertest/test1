@@ -494,4 +494,10 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
         Utility.resetLocationStatus(this);
         SunshineSyncAdapter.syncImmediately(this);
     }
+
+    @Override
+    protected void onStop() {
+        SunshineSyncAdapter.stopSyncing();
+        super.onStop();
+    }
 }

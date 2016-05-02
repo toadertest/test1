@@ -88,7 +88,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements 
     public static final String JSON_KEY_ID = "id";
     public static final String JSON_KEY_COD = "cod";
     public static final String GET = "GET";
-    private GoogleApiClient googleApiClient;
+    private static GoogleApiClient googleApiClient;
 
 
     // Now we have a String representing the complete forecast in JSON Format.
@@ -132,6 +132,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements 
     // 60 seconds (1 minute) * 180 = 3 hours
     public static final int SYNC_INTERVAL = 60 * 180;
     public static final int SYNC_FLEXTIME = SYNC_INTERVAL / 3;
+    private static final long FOUR_HOURS_IN_MILLIS = 1000 * 60 * 60 * 4;
+
     private static final long DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
     private static final int WEATHER_NOTIFICATION_ID = 3004;
     private static final String TAG = SunshineSyncAdapter.class.getCanonicalName();
@@ -477,7 +479,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements 
             String lastNotificationKey = context.getString(R.string.pref_last_notification);
             long lastSync = prefs.getLong(lastNotificationKey, 0);
 
-            if (System.currentTimeMillis() - lastSync >= DAY_IN_MILLIS) {
+            if (hasFourHoursPassed(lastSync)) {
                 // Last sync was more than 1 day ago, let's send a notification with the weather.
                 String locationQuery = Utility.getPreferredLocation(context);
 
@@ -570,6 +572,14 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements 
                 cursor.close();
             }
         }
+    }
+
+    private boolean hasADayPassed(long lastSync) {
+        return System.currentTimeMillis() - lastSync >= DAY_IN_MILLIS;
+    }
+
+    private boolean hasFourHoursPassed(long lastSync) {
+        return System.currentTimeMillis() - lastSync >= FOUR_HOURS_IN_MILLIS;
     }
 
     /**
@@ -734,14 +744,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements 
             initGoogleApiClient(context);
         }
         googleApiClient.connect();
-
     }
 
-    public void stopGoogleApiClient() {
-        if (googleApiClient != null && googleApiClient.isConnected()) {
-            googleApiClient.disconnect();
-        }
-    }
 
     @Override
     public void onConnected(Bundle bundle) {
@@ -758,4 +762,9 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements 
         Log.e(TAG, "onConnectionFailed");
     }
 
+    public static void stopSyncing() {
+        if (googleApiClient != null && googleApiClient.isConnected()) {
+            googleApiClient.disconnect();
+        }
+    }
 }

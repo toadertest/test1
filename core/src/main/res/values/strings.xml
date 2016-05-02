@@ -20,7 +20,7 @@
          It's to keep this short, so your launcher icon isn't displayed with "The greatest Wea"
          or something similar.
     -->
-    <string name="app_name">Andrei Sunshine Wearable watch face</string>
+    <string name="app_name">Custom Sunshine Wearable watch face</string>
 
     <!--
          By convention, "action" denotes that this String will be used as the label for an Action,
